@@ -1,0 +1,44 @@
+@"
+# ---- Environnement virtuel ----
+venv/
+.env/
+*.env
+
+# ---- Fichiers Python ----
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pkl
+*.log
+
+# ---- Fichiers Django ----
+db.sqlite3
+/staticfiles/
+/media/
+
+# ---- Config locale ----
+*.local
+*.secret
+*.bak
+
+# ---- PyCharm / VSCode ----
+.idea/
+.vscode/
+*.swp
+
+# ---- Compilations ----
+*.egg-info/
+build/
+dist/
+*.spec
+
+# ---- OS / Système ----
+.DS_Store
+Thumbs.db
+
+# ---- Railway / Deploy ----
+*.sqlite3
+*.db
+*.bak
+"@ | Out-File -Encoding utf8 .gitignore
