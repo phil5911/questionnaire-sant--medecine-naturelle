@@ -9,18 +9,26 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-
+import os
 from pathlib import Path
+
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# --- Charge le fichier .env ---
+load_dotenv(dotenv_path=BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-2z5^fry+dj$+a7=-&qsm(ab!7b8vf+gyw4w0o^1=812kc5vprv"
+# --- Clé secrète et mode DEBUG ---
+SECRET_KEY = os.environ.get('SECRET_KEY', 'changeme')
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -37,6 +45,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "questionnaire",
 ]
 
 MIDDLEWARE = [
@@ -72,12 +81,24 @@ WSGI_APPLICATION = "monquestionnairedesantepro.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+import os
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
+import dj_database_url
+
+IS_RAILWAY = os.getenv("RAILWAY_ENVIRONMENT", "false").lower() == "true"
+
+# Récupération de l'URL
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL and not IS_RAILWAY:
+    DATABASE_URL = f"postgresql://{os.getenv('LOCAL_DB_USER')}:{os.getenv('LOCAL_DB_PASSWORD')}@{os.getenv('LOCAL_DB_HOST')}:{os.getenv('LOCAL_DB_PORT')}/{os.getenv('LOCAL_DB_NAME')}"
+elif not DATABASE_URL:
+    raise Exception("DATABASE_URL manquante !")
+
+# Configuration finale simple
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    "default": dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=IS_RAILWAY)
 }
+
 
 
 # Password validation
@@ -116,7 +137,58 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+# --- Sécurité HTTPS pour prod ---
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
+# --- Clé primaire par défaut ---
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+import logging
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': 'django-error.log',
+        },
+    },
+    'root': {
+        'handlers': ['console', 'file'],
+        'level': 'ERROR',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+        'questionnaire': {
+            'handlers': ['console', 'file'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    },
+}
+
+
+
+
+
+
+
+
+
+
