@@ -12,21 +12,22 @@
   </style>
 </head>
 <body>
+{% if form.errors %}
+  <div class="alert alert-danger">
+    <h5>Erreurs dans le formulaire :</h5>
+    <ul>
+      {% for field, errors in form.errors.items %}
+        <li><strong>{{ field }} :</strong> {{ errors|join:", " }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
+
 <div class="container py-5">
   <h1 class="text-center mb-5">Questionnaire de santé (Médecine naturelle)</h1>
 
-  <!-- Boutons Export CSV / PDF -->
-  <div class="mb-4 d-flex justify-content-end gap-2">
-    <a href="{% url 'questionnaire:export_csv' %}" class="btn btn-primary">
-      <i class="bi bi-file-earmark-spreadsheet"></i> Exporter CSV
-    </a>
-    <a href="{% url 'questionnaire:export_pdf' %}" class="btn btn-danger">
-      <i class="bi bi-file-earmark-pdf"></i> Exporter PDF
-    </a>
-  </div>
+  <form method="post" action="{% url 'questionnaire:questionnaire_form' %}" class="card p-4 shadow-sm bg-white" id="questionnaireForm" novalidate>
 
-  <!-- Formulaire -->
-  <form method="post" class="card p-4 shadow-sm bg-white" id="questionnaireForm" novalidate>
     {% csrf_token %}
 
     {% if form.non_field_errors %}

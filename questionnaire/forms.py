@@ -20,6 +20,7 @@ class PatientForm(forms.ModelForm):
             "medical_history": forms.Textarea(attrs={"rows": 3, "class": "form-control"}),
             "family_history": forms.Textarea(attrs={"rows": 2, "class": "form-control"}),
             "lifestyle_notes": forms.Textarea(attrs={"rows": 2, "class": "form-control"}),
+            "consent": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
 
     # ✅ VALIDATIONS PERSONNALISÉES
@@ -54,3 +55,18 @@ class PatientForm(forms.ModelForm):
             self.add_error("consent", "Vous devez accepter le consentement avant de soumettre.")
 
         return cleaned_data
+
+    from django import forms
+    from .models import Patient
+
+    class PatientForm(forms.ModelForm):
+        class Meta:
+            model = Patient
+            fields = '__all__'
+            widgets = {
+                'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+                'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+                'email': forms.EmailInput(attrs={'class': 'form-control'}),
+                # ajoute les autres champs ici...
+            }
+
