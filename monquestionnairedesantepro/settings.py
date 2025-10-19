@@ -33,8 +33,20 @@ DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# --- ALLOWED_HOSTS ---
+if DEBUG:
+    ALLOWED_HOSTS = ['*']
+else:
+    ALLOWED_HOSTS = [
+        'web-production-f48c1.up.railway.app',
+        '127.0.0.1',
+        'localhost'
+    ]
 
+    CSRF_TRUSTED_ORIGINS = [
+        'https://web-production-f48c1.up.railway.app',
+        'http://127.0.0.1:8000',
+    ]
 
 # Application definition
 
@@ -182,6 +194,9 @@ LOGGING = {
         },
     },
 }
+
+
+
 
 
 
