@@ -94,23 +94,48 @@ WSGI_APPLICATION = "monquestionnairedesantepro.wsgi.application"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 import os
-from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 import dj_database_url
 
-IS_RAILWAY = os.getenv("RAILWAY_ENVIRONMENT", "false").lower() == "true"
+# --- ENVIRONNEMENT ---
+DEBUG = os.getenv("DEBUG", "True").lower() == "true"
+IS_RAILWAY = os.getenv("RAILWAY_ENVIRONMENT", "False").lower() == "true"
 
-# Récupération de l'URL
+# --- SECRET KEY ---
+SECRET_KEY = os.getenv(
+    "SECRET_KEY",
+    "django-insecure-default-key"  # Valeur de secours pour dev local
+)
+
+# --- ALLOWED HOSTS & CSRF ---
+if DEBUG:
+    ALLOWED_HOSTS = ["*"]
+    CSRF_TRUSTED_ORIGINS = []
+else:
+    RAILWAY_HOST = os.getenv("RAILWAY_HOST", "web-production-f48c1.up.railway.app")
+    ALLOWED_HOSTS = [RAILWAY_HOST, "127.0.0.1", "localhost"]
+    CSRF_TRUSTED_ORIGINS = [f"https://{RAILWAY_HOST}", "http://127.0.0.1:8000"]
+
+# --- DATABASE ---
 DATABASE_URL = os.getenv("DATABASE_URL")
+
 if not DATABASE_URL and not IS_RAILWAY:
-    DATABASE_URL = f"postgresql://{os.getenv('LOCAL_DB_USER')}:{os.getenv('LOCAL_DB_PASSWORD')}@{os.getenv('LOCAL_DB_HOST')}:{os.getenv('LOCAL_DB_PORT')}/{os.getenv('LOCAL_DB_NAME')}"
+    # base locale
+    DATABASE_URL = (
+        f"postgresql://{os.getenv('LOCAL_DB_USER','admin')}:"
+        f"{os.getenv('LOCAL_DB_PASSWORD','1234')}@"
+        f"{os.getenv('LOCAL_DB_HOST','localhost')}:"
+        f"{os.getenv('LOCAL_DB_PORT','5432')}/"
+        f"{os.getenv('LOCAL_DB_NAME','mon_questionnaire_sante')}"
+    )
 elif not DATABASE_URL:
     raise Exception("DATABASE_URL manquante !")
 
-# Configuration finale simple
 DATABASES = {
     "default": dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=IS_RAILWAY)
 }
 
+# --- AUTRES PARAMÈTRES ---
+PORT = int(os.getenv("PORT", 8000))
 
 
 # Password validation
